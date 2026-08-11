@@ -192,22 +192,32 @@
 
   <!-- ─────────────────────── Fingering chart view ─────────────────────── -->
   <section class="view" id="view-chart">
-    <div class="panel paper chart-panel">
+    <div class="panel paper chart-panel mode-one" id="chartPanel">
       <div class="chart-head">
-        <div>
-          <h2>Every note on the horn</h2>
-          <p class="chart-selected">
-            <strong id="chartNoteName">—</strong>
-            <span id="chartNoteConcert"></span>
-            <span id="chartDesc"></span>
-          </p>
+        <div class="note-readout">
+          <div class="note-readout-main">
+            <span class="note-name" id="chartNoteName">—</span>
+          </div>
+          <div class="note-readout-meta"><span id="chartNoteConcert"></span></div>
         </div>
-        <p class="chart-hint">Low B♭ up to altissimo F♯, in written pitch — the same
-          on every saxophone. Click a note to hear it, or use ← → to walk the scale.
-          Where a note has more than one fingering, both are shown.</p>
+        <div class="chart-head-right">
+          <div class="pill-group is-paper" id="chartMode">
+            <button class="pill is-active" type="button" data-mode="one">One note</button>
+            <button class="pill" type="button" data-mode="all">Every note</button>
+          </div>
+          <p class="chart-hint" id="chartHint"></p>
+        </div>
       </div>
 
-      <div class="note-grid" id="chartGrid"></div>
+      <div class="diagram-row" id="chartDiagramRow"></div>
+      <p class="fingering-desc" id="chartDesc"></p>
+
+      <div class="score-inner chart-staves" id="chartStaves">
+        <div id="chartRows"></div>
+        <div class="note-highlight" id="chartHighlight" hidden></div>
+      </div>
+
+      <div class="note-grid" id="chartGrid" hidden></div>
     </div>
   </section>
 </main>

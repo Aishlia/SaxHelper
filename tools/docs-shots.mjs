@@ -42,13 +42,21 @@ await page.mouse.move(1340, 12);
 await page.waitForTimeout(600);
 await page.screenshot({ path: `${OUT}/practice.png` });
 
+// The chart in its default mode: one note, big, against the chromatic staves.
 await page.click('.tab[data-view="chart"]');
 for (let i = 0; i < 9; i += 1) await page.keyboard.press('ArrowRight');
-// Wide enough that the whole written range lands in three rows.
-await page.setViewportSize({ width: 1440, height: 940 });
-await page.mouse.move(1420, 12);
+await page.setViewportSize({ width: 1360, height: 1180 });
+await page.mouse.move(1340, 12);
 await page.waitForTimeout(700);
 await page.screenshot({ path: `${OUT}/chart.png` });
 
+// And the wall: wide enough that the whole range lands in three rows.
+await page.click('#chartMode .pill[data-mode="all"]');
+await page.setViewportSize({ width: 1440, height: 940 });
+await page.mouse.move(1420, 12);
+await page.waitForTimeout(700);
+await page.screenshot({ path: `${OUT}/chart-all.png` });
+
 await browser.close();
-console.log('wrote docs/player.png, docs/key-names.png, docs/practice.png, docs/chart.png');
+console.log('wrote docs/player.png, docs/key-names.png, docs/practice.png, '
+  + 'docs/chart.png, docs/chart-all.png');

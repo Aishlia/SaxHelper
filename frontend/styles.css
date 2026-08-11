@@ -102,6 +102,12 @@ body {
   box-shadow: 0 4px 14px rgba(255, 61, 110, 0.35);
 }
 
+/* Same control, sitting on a white panel instead of the dark chrome. */
+.pill-group.is-paper { background: #f1f1eb; box-shadow: inset 0 0 0 1px #e2e2dc; }
+.pill-group.is-paper .pill { color: #6f747d; font-size: 12px; padding: 5px 13px; }
+.pill-group.is-paper .pill:hover { color: #14161a; }
+.pill-group.is-paper .pill.is-active { color: #fff; }
+
 /* ───────────────────────────── buttons ───────────────────────────── */
 
 .btn {
@@ -628,12 +634,26 @@ input[type=range]::-webkit-slider-thumb {
 /* ─────────────────────────── chart ──────────────────────────────────── */
 
 .chart-panel { padding: 20px 22px 26px; flex: none; }
+/* One note at a time reads better in a column; the wall of diagrams wants
+   every pixel of width it can get. */
+.chart-panel.mode-one { max-width: 1080px; margin: 0 auto; }
+.chart-panel .diagram-row { flex: none; height: min(58vh, 540px); margin: 10px 0 4px; }
+.chart-panel .diagram-card { flex: 0 1 380px; }
+.chart-panel .fingering-desc { min-height: 0; }
+/* The wall needs the vertical room, so the header gives up its slack. */
+.chart-panel.mode-all .fingering-desc { text-align: left; margin: 6px 0 0; }
+.chart-panel.mode-all .note-readout { min-height: 0; }
+.chart-staves { margin-top: 18px; }
+
+.chart-panel.mode-all { padding-bottom: 16px; }
 .chart-panel .note-grid {
-  /* Narrower columns than a drill: the whole written range fits one screen. */
+  /* Narrower columns and shorter diagrams than a drill, so that the whole
+     written range lands on one screen. */
   grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  --card-diagram: 152px;
-  margin-top: 14px;
+  --card-diagram: 146px;
+  margin-top: 8px;
 }
+
 .chart-head {
   display: flex;
   gap: 24px;
@@ -641,8 +661,6 @@ input[type=range]::-webkit-slider-thumb {
   justify-content: space-between;
   flex-wrap: wrap;
 }
-.chart-head h2 { margin: 0; font-size: 26px; letter-spacing: -0.02em; }
-.chart-selected { margin: 5px 0 0; font-size: 13px; color: #6f747d; }
-.chart-selected strong { font-size: 15px; color: #14161a; margin-right: 8px; }
-.chart-selected span + span::before { content: '•'; margin: 0 7px; color: #b9bec6; }
+.chart-head .note-readout { border: 0; padding: 0; margin: 0; }
+.chart-head-right { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
 .chart-hint { color: #6f747d; font-size: 13px; max-width: 52ch; margin: 0; }

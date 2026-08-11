@@ -1,5 +1,5 @@
 import { renderDiagram, describeFingering } from './fingering.js';
-import { renderScore } from './score.js';
+import { renderScore, renderNoteRow } from './score.js';
 import { renderDrillList, renderDrillStaff, renderDrillNotes } from './practice.js';
 import { renderNoteCards } from './notegrid.js';
 import { SaxSynth } from './audio.js';
@@ -28,7 +28,9 @@ const state = {
 
   chart: [],
   chartIndex: 0,
+  chartMode: 'one',
   chartCards: [],
+  chartPositions: [],
 
   drills: [],
   drillId: null,
@@ -446,16 +448,57 @@ function uploadFile(file) {
 
 /* ───────────────────────────── chart view ────────────────────────────── */
 
+const CHART_HINTS = {
+  one: 'Click any note, or use ← → to walk the chromatic scale. Fingerings are '
+    + 'written pitch and are the same on every saxophone.',
+  all: 'The whole written range, low B♭ to altissimo F♯. Notes with more than one '
+    + 'fingering show both.',
+};
+
+/** 'one' is the reference for a single note; 'all' is the wall of diagrams. */
+function setChartMode(mode) {
+  state.chartMode = mode;
+  for (const button of $('chartMode').querySelectorAll('.pill')) {
+    button.classList.toggle('is-active', button.dataset.mode === mode);
+  }
+  $('chartPanel').classList.toggle('mode-one', mode === 'one');
+  $('chartPanel').classList.toggle('mode-all', mode === 'all');
+  $('chartDiagramRow').hidden = mode !== 'one';
+  $('chartStaves').hidden = mode !== 'one';
+  $('chartGrid').hidden = mode !== 'all';
+  $('chartHint').textContent = CHART_HINTS[mode];
+  document.querySelector('main').scrollTo({ top: 0 });
+  if (state.view === 'chart') drawChart();
+}
+
 function drawChart() {
-  state.chartCards = renderNoteCards($('chartGrid'), state.chart.map((entry) => ({
-    label: noteLabel(entry.midi),
-    sublabel: hasEnharmonic(entry.midi) ? noteLabel(entry.midi, true) : '',
-    options: entry.options,
-  })), {
-    diagram: state.diagram,
-    showAlternates: true,
-    onSelect: (index) => setChartIndex(index, true),
-  });
+  if (state.chartMode === 'all') {
+    state.chartCards = renderNoteCards($('chartGrid'), state.chart.map((entry) => ({
+      label: noteLabel(entry.midi),
+      sublabel: hasEnharmonic(entry.midi) ? noteLabel(entry.midi, true) : '',
+      options: entry.options,
+    })), {
+      diagram: state.diagram,
+      showAlternates: true,
+      onSelect: (index) => setChartIndex(index, true),
+    });
+  } else {
+    const rows = $('chartRows');
+    rows.innerHTML = '';
+    const midis = state.chart.map((entry) => entry.midi);
+    const split = midis.findIndex((m) => m >= 74);
+
+    state.chartPositions = [];
+    let offset = 0;
+    for (const group of [midis.slice(0, split), midis.slice(split)]) {
+      state.chartPositions.push(...renderNoteRow(rows, group, {
+        fifths: 0,
+        indexOffset: offset,
+        onSelectNote: (index) => setChartIndex(index, true),
+      }));
+      offset += group.length;
+    }
+  }
   setChartIndex(state.chartIndex, false);
 }
 
@@ -466,17 +509,34 @@ function setChartIndex(index, hear) {
 
   $('chartNoteName').textContent = hasEnharmonic(midi)
     ? `${noteLabel(midi)} / ${noteLabel(midi, true)}` : noteLabel(midi);
-  $('chartNoteConcert').textContent = `sounds ${noteLabel(concertMidi(midi))} concert `
-    + `on ${state.instruments[state.instrument].label}`;
-  $('chartDesc').textContent = entry.options.length
-    ? describeFingering(state.diagram, entry.options[0].keys) : '';
+  $('chartNoteConcert').textContent = `written pitch • sounds `
+    + `${noteLabel(concertMidi(midi))} concert on ${state.instruments[state.instrument].label}`;
 
-  state.chartCards.forEach((card, i) => {
-    card.classList.toggle('is-current', i === state.chartIndex);
-  });
-  state.chartCards[state.chartIndex]?.scrollIntoView({ block: 'nearest' });
+  if (state.chartMode === 'all') {
+    $('chartDesc').textContent = entry.options.length
+      ? describeFingering(state.diagram, entry.options[0].keys) : '';
+    state.chartCards.forEach((card, i) => {
+      card.classList.toggle('is-current', i === state.chartIndex);
+    });
+    state.chartCards[state.chartIndex]?.scrollIntoView({ block: 'nearest' });
+  } else {
+    const fingering = paintDiagrams($('chartDiagramRow'), midi);
+    $('chartDesc').textContent = fingering.options.length
+      ? describeFingering(state.diagram, fingering.options[0].keys) : '';
+    moveChartHighlight();
+  }
 
   if (hear) synth.note(concertMidi(midi), synth.now + 0.01, 0.7);
+}
+
+function moveChartHighlight() {
+  const box = state.chartPositions[state.chartIndex];
+  const highlight = $('chartHighlight');
+  if (!box) { highlight.hidden = true; return; }
+  highlight.hidden = false;
+  highlight.style.transform = `translate(${box.left}px, ${box.top}px)`;
+  highlight.style.width = `${box.width}px`;
+  highlight.style.height = `${box.height}px`;
 }
 
 /* ─────────────────────────── practice view ───────────────────────────── */
@@ -623,7 +683,7 @@ function buildInstrumentToggle() {
       state.instrument = id;
       buildInstrumentToggle();
       if (state.score) updateReadout();
-      if (state.view === 'chart') setChartIndex(state.chartIndex, false);
+      if (state.view === 'chart') drawChart();
       if (state.view === 'practice') drawDrill();
     });
     container.appendChild(button);
@@ -684,6 +744,10 @@ function wireEvents() {
   $('labelsToggle').addEventListener('change', (event) => {
     state.showLabels = event.target.checked;
     if (state.score) updateReadout();
+  });
+
+  $('chartMode').addEventListener('click', (event) => {
+    if (event.target.dataset.mode) setChartMode(event.target.dataset.mode);
   });
 
   $('drillPlay').addEventListener('click', () => (state.drillPlaying ? stopDrill() : startDrill()));
@@ -782,6 +846,7 @@ async function main() {
   state.chart = data.chart;
   state.fingerings = new Map(data.chart.map((entry) => [entry.midi, entry]));
 
+  setChartMode(state.chartMode);
   state.drills = practice.groups;
   state.drillId = practice.groups[0]?.drills[0]?.id ?? null;
   renderDrillList($('drillList'), state.drills, state.drillId, selectDrill);
