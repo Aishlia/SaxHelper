@@ -17,6 +17,8 @@ every note, in order. Runs entirely on your own machine.
   concert pitch each written note sounds.
 - **Lets you fix mistakes.** Recognition is never perfect, so click any note and
   nudge it by a semitone or an octave, or open the original page side by side.
+- **Practice page** of warm-ups, scales, arpeggios and patterns, each laid out
+  with every fingering on screen at once.
 - **Chromatic chart tab** for looking up a single note, no file needed.
 
 ## Run it
@@ -43,6 +45,22 @@ No file to hand? Hit **Try the sample**.
 | `enter` | hear the current note |
 | `shift` + `↑` `↓` | nudge the note a semitone |
 | `alt` + `↑` `↓` | nudge the note an octave |
+
+On the practice page, `space` plays the drill and `←` `→` step through it. On the
+fingering chart, `←` `→` walk the chromatic scale.
+
+## Practice
+
+Two dozen drills, from long tones and octave slurs up through the seven scale
+keys band music actually asks for, arpeggios, natural minors and patterns. Pick
+one and the whole thing is on screen: the notation, then a fingering for every
+note in order. Play it back at any tempo and the highlight follows along, or
+click a single diagram to hear that note.
+
+![The practice page, showing G major](docs/practice.png)
+
+Drills are written pitch, and the header tells you what key that lands in for
+the horn you picked — written G major sounds B♭ major on an alto.
 
 ## Reading a diagram
 
@@ -75,6 +93,7 @@ the picture and the keys it names can never drift apart.
 | `backend/omr.py` | page rasterising and the recogniser |
 | `backend/score.py` | MusicXML → flat note list, multi-page merge |
 | `backend/fingerings.py` | key layout and the chromatic fingering table |
+| `backend/warmups.py` | the practice drills, as lists of written pitches |
 | `frontend/` | the app: score rendering, diagrams, playback |
 | `tools/` | headless-browser scripts for screenshots and checks |
 

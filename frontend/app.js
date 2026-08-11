@@ -1,5 +1,6 @@
 import { renderDiagram, describeFingering } from './fingering.js';
 import { renderScore, renderNoteRow } from './score.js';
+import { renderDrillList, renderDrillStaff, renderDrillNotes } from './practice.js';
 import { SaxSynth } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
@@ -27,9 +28,17 @@ const state = {
   chart: [],
   chartIndex: 0,
   chartPositions: [],
+
+  drills: [],
+  drillId: null,
+  drillStep: 0,
+  drillCards: [],
+  drillTempo: 84,
+  drillPlaying: false,
 };
 
 const playback = { t0: 0, spq: 0.5, pointer: 0, clickQuarter: 0, raf: 0 };
+const drillPlayback = { t0: 0, spq: 0.7, raf: 0 };
 
 /* ─────────────────────────── fingering lookup ─────────────────────────── */
 
@@ -62,7 +71,11 @@ const DURATION_NAMES = {
 };
 
 function noteLabel(midi, flats = false) {
-  return `${(flats ? FLATS : SHARPS)[((midi % 12) + 12) % 12]}${Math.floor(midi / 12) - 1}`;
+  return `${pitchLabel(midi, flats)}${Math.floor(midi / 12) - 1}`;
+}
+
+function pitchLabel(midi, flats = false) {
+  return (flats ? FLATS : SHARPS)[((midi % 12) + 12) % 12];
 }
 
 function hasEnharmonic(midi) {
@@ -479,6 +492,111 @@ function setChartIndex(index, hear) {
   if (hear) synth.note(concertMidi(midi), synth.now + 0.01, 0.7);
 }
 
+/* ─────────────────────────── practice view ───────────────────────────── */
+
+function currentDrill() {
+  for (const group of state.drills) {
+    const found = group.drills.find((drill) => drill.id === state.drillId);
+    if (found) return found;
+  }
+  return null;
+}
+
+/** "written G major • sounds B♭ major on Alto (Eb)", for drills that have a key. */
+function drillKeyLine(drill) {
+  const count = `${drill.notes.length} notes`;
+  if (drill.tonic == null) return count;
+  const written = pitchLabel(drill.tonic, drill.fifths < 0);
+  // Concert keys for a saxophone land on the flat side almost every time.
+  const concert = pitchLabel(concertMidi(drill.tonic), true);
+  const instrument = state.instruments[state.instrument].label;
+  return `written ${written} ${drill.quality} `
+    + `<span class="dot-sep">•</span> sounds ${concert} ${drill.quality} on ${instrument} `
+    + `<span class="dot-sep">•</span> ${count}`;
+}
+
+function drawDrill() {
+  const drill = currentDrill();
+  if (!drill) return;
+
+  $('drillName').textContent = drill.name;
+  $('drillKey').innerHTML = drillKeyLine(drill);
+  $('drillHint').textContent = drill.hint;
+
+  renderDrillStaff($('drillStaff'), drill);
+  state.drillCards = renderDrillNotes($('drillGrid'), drill, {
+    diagram: state.diagram,
+    fingeringFor,
+    noteLabel,
+    onSelect: (step) => { stopDrill(); setDrillStep(step, true); },
+  });
+  setDrillStep(Math.min(state.drillStep, drill.notes.length - 1), false);
+}
+
+function selectDrill(id) {
+  stopDrill();
+  state.drillId = id;
+  state.drillStep = 0;
+  for (const button of document.querySelectorAll('.drill-item')) {
+    button.classList.toggle('is-active', button.dataset.drill === id);
+  }
+  drawDrill();
+  $('drillPanel').scrollTo({ top: 0 });
+}
+
+function setDrillStep(step, hear) {
+  const drill = currentDrill();
+  if (!drill) return;
+  state.drillStep = Math.max(0, Math.min(step, drill.notes.length - 1));
+
+  state.drillCards.forEach((card, i) => {
+    card.classList.toggle('is-current', i === state.drillStep);
+  });
+  const card = state.drillCards[state.drillStep];
+  if (card && state.drillPlaying) card.scrollIntoView({ block: 'nearest' });
+  if (hear) synth.note(concertMidi(drill.notes[state.drillStep]), synth.now + 0.01, 0.7);
+}
+
+function startDrill() {
+  const drill = currentDrill();
+  if (!drill) return;
+  synth.resume();
+  if (state.drillStep >= drill.notes.length - 1) state.drillStep = 0;
+
+  drillPlayback.spq = 60 / state.drillTempo;
+  drillPlayback.t0 = synth.now + 0.16 - state.drillStep * drillPlayback.spq;
+  // A drill is a few dozen notes at most, so the whole thing can be scheduled
+  // in one go rather than in a rolling window like a full score.
+  for (let i = state.drillStep; i < drill.notes.length; i += 1) {
+    synth.note(concertMidi(drill.notes[i]),
+      drillPlayback.t0 + i * drillPlayback.spq, drillPlayback.spq * 0.92);
+  }
+
+  state.drillPlaying = true;
+  $('drillPlay').textContent = '❚❚';
+  $('drillPlay').classList.add('is-playing');
+  tickDrill();
+}
+
+function stopDrill() {
+  if (!state.drillPlaying) return;
+  state.drillPlaying = false;
+  cancelAnimationFrame(drillPlayback.raf);
+  synth.stopAll();
+  $('drillPlay').textContent = '▶';
+  $('drillPlay').classList.remove('is-playing');
+}
+
+function tickDrill() {
+  if (!state.drillPlaying) return;
+  const drill = currentDrill();
+  const elapsed = (synth.now - drillPlayback.t0) / drillPlayback.spq;
+  if (elapsed >= drill.notes.length) { stopDrill(); return; }
+  const step = Math.max(0, Math.floor(elapsed));
+  if (step !== state.drillStep) setDrillStep(step, false);
+  drillPlayback.raf = requestAnimationFrame(tickDrill);
+}
+
 /* ──────────────────────────────── wiring ─────────────────────────────── */
 
 function setView(view) {
@@ -487,13 +605,19 @@ function setView(view) {
     tab.classList.toggle('is-active', tab.dataset.view === view);
   }
   $('view-song').classList.toggle('is-active', view === 'song');
+  $('view-practice').classList.toggle('is-active', view === 'practice');
   $('view-chart').classList.toggle('is-active', view === 'chart');
+
+  if (view !== 'practice') stopDrill();
 
   // A hidden view has no width, so anything laid out while it was hidden has to
   // be measured again once it is on screen.
   if (view === 'chart') {
     stopPlayback();
     drawChart();
+  } else if (view === 'practice') {
+    stopPlayback();
+    drawDrill();
   } else if (state.score && !$('player').hidden) {
     drawScore();
     setIndex(state.index, { scroll: false });
@@ -513,6 +637,7 @@ function buildInstrumentToggle() {
       buildInstrumentToggle();
       if (state.score) updateReadout();
       if (state.chartPositions.length) setChartIndex(state.chartIndex, false);
+      if (state.view === 'practice') drawDrill();
     });
     container.appendChild(button);
   }
@@ -575,6 +700,13 @@ function wireEvents() {
     if (state.chartPositions.length) setChartIndex(state.chartIndex, false);
   });
 
+  $('drillPlay').addEventListener('click', () => (state.drillPlaying ? stopDrill() : startDrill()));
+  $('drillTempo').addEventListener('input', (event) => {
+    state.drillTempo = Number(event.target.value);
+    $('drillTempoValue').textContent = String(state.drillTempo);
+    if (state.drillPlaying) { stopDrill(); startDrill(); }
+  });
+
   $('originalBtn').addEventListener('click', () => toggleModal(true));
   for (const node of document.querySelectorAll('[data-close-modal]')) {
     node.addEventListener('click', () => toggleModal(false));
@@ -596,6 +728,23 @@ function wireEvents() {
     if (state.view === 'chart') {
       if (event.key === 'ArrowRight') { setChartIndex(state.chartIndex + 1, true); event.preventDefault(); }
       if (event.key === 'ArrowLeft') { setChartIndex(state.chartIndex - 1, true); event.preventDefault(); }
+      return;
+    }
+    if (state.view === 'practice') {
+      if (event.key === ' ') {
+        event.preventDefault();
+        state.drillPlaying ? stopDrill() : startDrill();
+      }
+      if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        stopDrill();
+        setDrillStep(state.drillStep + 1, true);
+      }
+      if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        stopDrill();
+        setDrillStep(state.drillStep - 1, true);
+      }
       return;
     }
     if (!state.score || $('player').hidden) return;
@@ -629,19 +778,27 @@ function wireEvents() {
         moveHighlight();
       } else if (state.view === 'chart') {
         drawChart();
+      } else if (state.view === 'practice') {
+        drawDrill();
       }
     }, 180);
   });
 }
 
 async function main() {
-  const response = await fetch('/api/fingerings');
-  const data = await response.json();
+  const [data, practice] = await Promise.all([
+    fetch('/api/fingerings').then((r) => r.json()),
+    fetch('/api/warmups').then((r) => r.json()),
+  ]);
   state.diagram = data.diagram;
   state.instruments = data.instruments;
   state.range = data.range;
   state.chart = data.chart;
   state.fingerings = new Map(data.chart.map((entry) => [entry.midi, entry]));
+
+  state.drills = practice.groups;
+  state.drillId = practice.groups[0]?.drills[0]?.id ?? null;
+  renderDrillList($('drillList'), state.drills, state.drillId, selectDrill);
 
   buildInstrumentToggle();
   wireEvents();

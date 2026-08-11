@@ -183,7 +183,9 @@ export function renderScore(container, score, options = {}) {
  */
 export function renderNoteRow(container, midiList, options = {}) {
   const { Renderer, Stave, StaveNote, Voice, Formatter, Accidental } = VF();
-  const { fifths = 0, onSelectNote, indexOffset = 0 } = options;
+  const {
+    fifths = 0, onSelectNote, indexOffset = 0, height = 168, staveY = 40,
+  } = options;
 
   const width = Math.max(520, container.clientWidth - 16);
   const lineDiv = document.createElement('div');
@@ -191,10 +193,10 @@ export function renderNoteRow(container, midiList, options = {}) {
   container.appendChild(lineDiv);
 
   const renderer = new Renderer(lineDiv, Renderer.Backends.SVG);
-  renderer.resize(width, 168);
+  renderer.resize(width, height);
   const context = renderer.getContext();
 
-  const stave = new Stave(8, 40, width - 20);
+  const stave = new Stave(8, staveY, width - 20);
   stave.addClef('treble');
   stave.setContext(context).draw();
 

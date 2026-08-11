@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 import fingerings
 import omr
 import score as score_lib
+import warmups
 
 ROOT = Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
@@ -197,6 +198,11 @@ def all_fingerings() -> JSONResponse:
 def one_fingering(midi: int) -> JSONResponse:
     return JSONResponse({"midi": midi, "name": fingerings.note_name(midi),
                          **fingerings.fingerings_for(midi)})
+
+
+@app.get("/api/warmups")
+def practice_drills() -> JSONResponse:
+    return JSONResponse({"groups": warmups.catalog()})
 
 
 @app.get("/api/health")

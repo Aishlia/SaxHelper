@@ -20,6 +20,7 @@
 
   <nav class="tabs" id="tabs">
     <button class="tab is-active" data-view="song">Song</button>
+    <button class="tab" data-view="practice">Practice</button>
     <button class="tab" data-view="chart">Fingering chart</button>
   </nav>
 
@@ -161,6 +162,33 @@
       <div class="original-pages" id="originalPages"></div>
     </div>
   </div>
+
+  <!-- ────────────────────────── Practice view ─────────────────────────── -->
+  <section class="view" id="view-practice">
+    <div class="practice-grid">
+      <aside class="panel drill-list" id="drillList"></aside>
+
+      <section class="panel paper drill-panel" id="drillPanel">
+        <div class="drill-head">
+          <div>
+            <h2 id="drillName">—</h2>
+            <p class="drill-key" id="drillKey"></p>
+          </div>
+          <div class="drill-transport">
+            <button class="btn btn-round btn-play" id="drillPlay" title="Play the drill (space)">▶</button>
+            <label class="slider-label" for="drillTempo">Tempo</label>
+            <input type="range" id="drillTempo" min="30" max="180" value="84" />
+            <span class="mono" id="drillTempoValue">84</span>
+            <span class="drill-keys"><kbd>space</kbd> play <kbd>←</kbd><kbd>→</kbd> step</span>
+          </div>
+        </div>
+
+        <p class="drill-hint" id="drillHint"></p>
+        <div class="drill-staff" id="drillStaff"></div>
+        <div class="drill-grid" id="drillGrid"></div>
+      </section>
+    </div>
+  </section>
 
   <!-- ─────────────────────── Fingering chart view ─────────────────────── -->
   <section class="view" id="view-chart">
