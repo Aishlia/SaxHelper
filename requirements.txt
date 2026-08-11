@@ -1,0 +1,10 @@
+# Python 3.11+ required (homr needs it).
+fastapi==0.141.1
+uvicorn[standard]==0.52.1
+python-multipart==0.0.32
+pymupdf==1.28.2
+pillow==12.3.0
+
+# Optical music recognition: sheet music image -> MusicXML.
+# Pulls in onnxruntime and downloads its models on first run (~200 MB, cached).
+homr==0.7.0

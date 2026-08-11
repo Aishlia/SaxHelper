@@ -1,0 +1,487 @@
+:root {
+  --bg: #0e1014;
+  --bg-soft: #16191f;
+  --line: #262b34;
+  --text: #e8ebf0;
+  --muted: #9aa3b2;
+  --accent: #ff3d6e;
+  --accent-soft: rgba(255, 61, 110, 0.16);
+  --ink: #14161a;
+  --paper: #fdfdfb;
+  --radius: 14px;
+  --shadow: 0 12px 34px rgba(0, 0, 0, 0.36);
+}
+
+* { box-sizing: border-box; }
+
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  background:
+    radial-gradient(1100px 620px at 12% -10%, #1d2230 0%, transparent 60%),
+    radial-gradient(900px 520px at 96% 0%, #2a1a24 0%, transparent 55%),
+    var(--bg);
+  color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ───────────────────────────── top bar ───────────────────────────── */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 22px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(14, 16, 20, 0.82);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.brand-mark { font-size: 24px; }
+.brand strong { display: block; font-size: 15px; letter-spacing: -0.01em; }
+.brand small { color: var(--muted); font-size: 12px; }
+
+.tabs { display: flex; gap: 4px; margin-left: 8px; }
+
+.tab {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  padding: 7px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+}
+.tab:hover { color: var(--text); background: #1d2129; }
+.tab.is-active { color: var(--text); background: #232833; box-shadow: inset 0 0 0 1px var(--line); }
+
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+
+.pill-group {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: #1b1f27;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+
+.pill {
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 13px;
+  padding: 6px 15px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.pill:hover { color: var(--text); }
+.pill.is-active {
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 4px 14px rgba(255, 61, 110, 0.35);
+}
+
+/* ───────────────────────────── buttons ───────────────────────────── */
+
+.btn {
+  font: inherit;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #1c2029;
+  color: var(--text);
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease, transform 0.06s ease;
+}
+.btn:hover { background: #232833; border-color: #333a46; }
+.btn:active { transform: translateY(1px); }
+
+.btn-primary {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 8px 22px rgba(255, 61, 110, 0.32);
+}
+.btn-primary:hover { background: #ff547e; border-color: transparent; }
+
+.btn-ghost { background: transparent; }
+
+.btn-round {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: 12px;
+  display: grid;
+  place-items: center;
+}
+#prevBtn { transform: scaleX(-1); }
+
+.btn-play { width: 48px; height: 48px; font-size: 15px; background: var(--accent); border-color: transparent; color: #fff; }
+.btn-play:hover { background: #ff547e; }
+.btn-play.is-playing { background: #2a2f3a; color: var(--text); }
+
+.btn-mini { padding: 5px 9px; font-size: 12px; border-radius: 8px; }
+.btn-mini.is-active { border-color: var(--accent); color: var(--accent); }
+
+/* ───────────────────────────── layout ───────────────────────────── */
+
+/* The app fills the window: the score panel absorbs the leftover height so the
+   fingering panel and the transport bar never shift as you move between notes. */
+main {
+  flex: 1;
+  min-height: 0;
+  padding: 20px 22px 16px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.view { display: none; }
+.view.is-active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+#view-chart.is-active { display: block; }
+
+.panel {
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  box-shadow: var(--shadow);
+}
+
+.paper {
+  background: var(--paper);
+  color: #14161a;
+  border-color: #e2e2dc;
+}
+
+/* ─────────────────────────── upload / states ─────────────────────── */
+
+.upload-wrap { display: grid; place-items: center; flex: 1; min-height: 62vh; }
+
+.dropzone {
+  width: min(680px, 100%);
+  text-align: center;
+  padding: 54px 40px;
+  border-radius: 22px;
+  border: 1.5px dashed #38404e;
+  background: linear-gradient(180deg, rgba(30, 34, 43, 0.7), rgba(20, 23, 29, 0.7));
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.dropzone.is-hover { border-color: var(--accent); background: rgba(255, 61, 110, 0.06); }
+.dropzone-icon { font-size: 44px; }
+.dropzone h1 { font-size: 25px; margin: 12px 0 8px; letter-spacing: -0.02em; }
+.dropzone p { color: var(--muted); margin: 0 auto; max-width: 46ch; }
+.dropzone-actions { display: flex; gap: 10px; justify-content: center; margin: 24px 0 6px; flex-wrap: wrap; }
+.fineprint { font-size: 12px; color: #6c7484; margin-top: 18px; }
+
+.progress-card, .error-card {
+  width: min(560px, 100%);
+  margin: 14vh auto 0;
+  padding: 24px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  box-shadow: var(--shadow);
+}
+.error-card { flex-direction: column; align-items: flex-start; }
+.error-card p { color: var(--muted); margin: 4px 0 14px; white-space: pre-wrap; }
+.progress-body { flex: 1; display: grid; gap: 6px; }
+.progress-body span { color: var(--muted); font-size: 13px; }
+.progress-track { height: 6px; border-radius: 999px; background: #232833; overflow: hidden; margin-top: 6px; }
+.progress-bar { height: 100%; width: 4%; background: var(--accent); border-radius: 999px; transition: width 0.3s ease; }
+
+.spinner {
+  width: 30px; height: 30px; flex: none;
+  border-radius: 50%;
+  border: 3px solid #2b313c;
+  border-top-color: var(--accent);
+  animation: spin 0.85s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ───────────────────────────── player ───────────────────────────── */
+
+.player { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+
+.player-grid {
+  flex: 1;
+  min-height: 400px;
+  display: grid;
+  grid-template-columns: 366px minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.fingering-panel {
+  padding: 18px;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.note-readout {
+  flex: none;
+  min-height: 74px;
+  border-bottom: 1px solid #ececE6;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+.note-readout-main { display: flex; align-items: baseline; gap: 8px; }
+.note-name { font-size: 40px; font-weight: 650; letter-spacing: -0.03em; line-height: 1; }
+.note-enh { color: #8a8f98; font-size: 16px; }
+.note-readout-meta { color: #6f747d; font-size: 13px; margin-top: 6px; }
+.dot-sep { padding: 0 8px; color: #c3c6cb; }
+
+/* The diagrams scale to whatever height is left over, so one fingering or two,
+   labelled or not, the panel is always exactly the same size. */
+.diagram-row {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 14px;
+  align-items: stretch;
+  justify-content: center;
+}
+
+.diagram-card {
+  margin: 0;
+  text-align: center;
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.diagram-card .sax-diagram { flex: 1; min-height: 0; width: 100%; height: 100%; }
+
+.diagram-card figcaption {
+  flex: none;
+  font-size: 11px;
+  color: #7b8089;
+  margin-top: 6px;
+  text-transform: lowercase;
+}
+.diagram-card.is-primary figcaption { color: #4c525b; font-weight: 600; }
+
+.fingering-desc {
+  flex: none;
+  font-size: 13px;
+  color: #454a53;
+  text-align: center;
+  margin: 12px 0 0;
+  min-height: 2.6em;
+}
+
+.fingering-warning {
+  flex: none;
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: #8a4b12;
+  background: #fff6e5;
+  border: 1px solid #f4dcb0;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+
+.checkline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #6f747d;
+  cursor: pointer;
+  user-select: none;
+}
+
+.fingering-panel > .checkline { flex: none; margin-top: 12px; align-self: flex-start; }
+
+/* saxophone diagram */
+
+/* Printed-chart look: open keys are outlines, pressed keys are filled in. */
+.sax-diagram { display: block; }
+.sax-key { cursor: default; }
+.sax-key-shape {
+  fill: #fff;
+  stroke: var(--ink);
+  stroke-width: 4;
+  stroke-linejoin: round;
+}
+.sax-key.is-pressed .sax-key-shape { fill: var(--ink); }
+
+.sax-key-label { font-size: 13px; fill: #8b9099; }
+.sax-key-label.is-left { text-anchor: end; }
+.sax-key-label.is-right { text-anchor: start; }
+.sax-key-label.is-in { text-anchor: middle; font-weight: 700; fill: #9aa0a9; }
+.sax-key.is-pressed .sax-key-label { fill: #3d434c; font-weight: 700; }
+.sax-key.is-pressed .sax-key-label.is-in { fill: #fff; }
+
+.sax-hand-label {
+  font-size: 11px; fill: #c2c7ce; font-weight: 700;
+  letter-spacing: 0.1em; text-anchor: end;
+}
+
+/* score */
+
+.score-panel { padding: 10px 8px; height: 100%; min-height: 0; display: flex; }
+.score-scroll { flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden; }
+.score-inner { position: relative; }
+.score-line { position: relative; }
+.score-line svg { display: block; }
+
+/* VexFlow sets stroke on the <svg> root, so the hit targets must opt out. */
+.score-hit { fill: transparent; stroke: none; cursor: pointer; }
+.score-hit:hover { fill: rgba(255, 61, 110, 0.1); }
+
+.note-highlight {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 6px;
+  background: var(--accent-soft);
+  border: 1.5px solid rgba(255, 61, 110, 0.55);
+  pointer-events: none;
+  transition: transform 0.16s cubic-bezier(0.4, 0, 0.2, 1), width 0.12s, height 0.12s;
+}
+
+/* transport */
+
+.transport {
+  flex: none;
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  margin-top: 16px;
+  padding: 12px 16px;
+  min-height: 66px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #171a21;
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  flex-wrap: wrap;
+  box-shadow: var(--shadow);
+}
+
+.transport-group { display: flex; align-items: center; gap: 10px; }
+.transport-group.counter { flex: 1; min-width: 220px; }
+.counter span { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 13px; min-width: 74px; }
+.counter input[type=range] { flex: 1; }
+
+.slider-label, .edit-label { font-size: 12px; color: var(--muted); }
+.mono { font-variant-numeric: tabular-nums; font-size: 13px; color: var(--text); min-width: 26px; }
+.edit-group { gap: 6px; }
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: #2c313b;
+  outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px; height: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(255, 61, 110, 0.4);
+}
+#tempo { width: 130px; }
+
+.below-player {
+  flex: none;
+  margin-top: 12px;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.below-right { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+.score-meta { color: var(--muted); font-size: 13px; }
+.score-meta strong { color: var(--text); }
+.shortcuts { color: #6c7484; font-size: 12px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.shortcuts kbd {
+  font: inherit;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #1c2029;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+.shortcuts kbd + kbd { margin-left: -3px; }
+
+.original summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+/* Original-page comparison lives in an overlay so it can never push the
+   player around. */
+.modal { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; padding: 32px; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(6, 8, 11, 0.72); backdrop-filter: blur(3px); }
+
+.modal-card {
+  position: relative;
+  width: min(880px, 100%);
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.modal-head {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+}
+.modal-head p { color: var(--muted); font-size: 12px; margin: 6px 0 0; max-width: 62ch; }
+.modal-head em { color: var(--text); font-style: normal; }
+
+.original-pages { display: grid; gap: 14px; padding: 18px 20px; overflow-y: auto; }
+.original-pages img { width: 100%; border-radius: 10px; border: 1px solid var(--line); background: #fff; }
+
+/* ───────────────────────── fingering chart view ───────────────────── */
+
+.chart-panel { padding: 20px 22px 26px; max-width: 1080px; margin: 0 auto; }
+.chart-head { display: flex; gap: 24px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; }
+.chart-head .note-readout { border: 0; padding: 0; margin: 0; }
+.chart-hint { color: #6f747d; font-size: 13px; max-width: 46ch; margin: 0; }
+.chart-staves { margin-top: 18px; }
+.chart-panel { flex: none; }
+.chart-panel .diagram-row { flex: none; height: min(58vh, 540px); margin: 10px 0 4px; }
+.chart-panel .diagram-card { flex: 0 1 380px; }
+.chart-panel .fingering-desc { min-height: 0; }

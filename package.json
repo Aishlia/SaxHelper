@@ -1,0 +1,22 @@
+{
+  "name": "saxhelper",
+  "version": "1.0.0",
+  "description": "Sheet music in, alto sax fingerings out.",
+  "scripts": {
+    "shots": "node tools/docs-shots.mjs",
+    "check": "node tools/e2e.mjs"
+  },
+  "keywords": [
+    "saxophone",
+    "fingering",
+    "sheet-music",
+    "omr"
+  ],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "playwright": "^1.62.1"
+  },
+  "private": true
+}

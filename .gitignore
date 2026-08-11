@@ -1,0 +1,7 @@
+.venv/
+.jobs/
+node_modules/
+tools/shots/
+samples/*.musicxml
+__pycache__/
+.DS_Store

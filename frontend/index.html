@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sax Sheet Reader — fingerings from sheet music</title>
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='26'>🎷</text></svg>" />
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">🎷</span>
+    <span>
+      <strong>Sax Sheet Reader</strong>
+      <small>sheet music in, fingerings out</small>
+    </span>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab is-active" data-view="song">Song</button>
+    <button class="tab" data-view="chart">Fingering chart</button>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="pill-group" id="instrumentToggle"></div>
+    <button class="btn btn-ghost" id="newFileBtn" hidden>New file</button>
+  </div>
+</header>
+
+<main>
+  <!-- ───────────────────────── Song view ───────────────────────── -->
+  <section class="view is-active" id="view-song">
+
+    <div class="upload-wrap" id="uploadWrap">
+      <div class="dropzone" id="dropzone">
+        <div class="dropzone-icon">🎼</div>
+        <h1>Drop your sheet music here</h1>
+        <p>PDF, photo or scan (PNG / JPG / TIFF), or a MusicXML file.<br />
+           You get every note, in order, with the alto sax fingering for each one.</p>
+        <div class="dropzone-actions">
+          <button class="btn btn-primary" id="chooseBtn">Choose a file</button>
+          <button class="btn btn-ghost" id="sampleBtn">Try the sample (Careless Whisper)</button>
+        </div>
+        <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.tif,.tiff,.webp,.bmp,.gif,.musicxml,.xml,.mxl" hidden />
+        <p class="fineprint">Everything runs on your machine. Nothing is uploaded anywhere.</p>
+      </div>
+    </div>
+
+    <div class="progress-card" id="progressCard" hidden>
+      <div class="spinner"></div>
+      <div class="progress-body">
+        <strong id="progressTitle">Reading your sheet music…</strong>
+        <span id="progressMessage">Starting the recogniser</span>
+        <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+      </div>
+    </div>
+
+    <div class="error-card" id="errorCard" hidden>
+      <strong>That didn't work</strong>
+      <p id="errorMessage"></p>
+      <button class="btn btn-ghost" id="errorBackBtn">Try another file</button>
+    </div>
+
+    <div class="player" id="player" hidden>
+      <div class="player-grid">
+
+        <aside class="panel paper fingering-panel">
+          <div class="note-readout">
+            <div class="note-readout-main">
+              <span class="note-name" id="noteName">—</span>
+              <span class="note-enh" id="noteEnh"></span>
+            </div>
+            <div class="note-readout-meta">
+              <span id="noteConcert">—</span>
+              <span class="dot-sep">•</span>
+              <span id="noteWhere">—</span>
+            </div>
+          </div>
+
+          <div class="diagram-row" id="diagramRow"></div>
+
+          <p class="fingering-desc" id="fingeringDesc"></p>
+          <p class="fingering-warning" id="fingeringWarning" hidden></p>
+
+          <label class="checkline">
+            <input type="checkbox" id="labelsToggle" /> Show key names
+          </label>
+        </aside>
+
+        <section class="panel paper score-panel">
+          <div class="score-scroll" id="scoreScroll">
+            <div class="score-inner" id="scoreInner">
+              <div id="score"></div>
+              <div class="note-highlight" id="highlight" hidden></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="transport">
+        <div class="transport-group">
+          <button class="btn btn-round" id="prevBtn" title="Previous note (←)">◀</button>
+          <button class="btn btn-round btn-play" id="playBtn" title="Play / pause (space)">▶</button>
+          <button class="btn btn-round" id="nextBtn" title="Next note (→)">▶</button>
+          <button class="btn btn-ghost" id="hearBtn" title="Hear this note (enter)">Hear note</button>
+        </div>
+
+        <div class="transport-group counter">
+          <span id="noteCounter">0 / 0</span>
+          <input type="range" id="seek" min="0" max="0" value="0" />
+        </div>
+
+        <div class="transport-group">
+          <label class="slider-label" for="tempo">Tempo</label>
+          <input type="range" id="tempo" min="24" max="200" value="90" />
+          <span class="mono" id="tempoValue">90</span>
+          <label class="checkline"><input type="checkbox" id="metronomeToggle" /> Click</label>
+          <label class="checkline"><input type="checkbox" id="loopToggle" /> Loop</label>
+        </div>
+
+        <div class="transport-group edit-group">
+          <span class="edit-label">Fix note</span>
+          <button class="btn btn-mini" id="semitoneDown" title="Down a semitone (shift+↓)">♭</button>
+          <button class="btn btn-mini" id="semitoneUp" title="Up a semitone (shift+↑)">♯</button>
+          <button class="btn btn-mini" id="octaveDown" title="Down an octave (alt+↓)">−8va</button>
+          <button class="btn btn-mini" id="octaveUp" title="Up an octave (alt+↑)">+8va</button>
+          <button class="btn btn-mini" id="resetEdits" title="Undo all note fixes">reset</button>
+        </div>
+      </div>
+
+      <div class="below-player">
+        <div class="score-meta" id="scoreMeta"></div>
+        <div class="below-right">
+          <div class="shortcuts">
+            <kbd>space</kbd> play/pause
+            <kbd>←</kbd><kbd>→</kbd> step note
+            <kbd>enter</kbd> hear note
+            <kbd>shift</kbd>+<kbd>↑↓</kbd> nudge a semitone
+            <kbd>alt</kbd>+<kbd>↑↓</kbd> nudge an octave
+          </div>
+          <button class="btn btn-mini" id="originalBtn" hidden>Compare with the original</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="modal" id="originalModal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-label="Original page">
+      <header class="modal-head">
+        <div>
+          <strong>The page as the recogniser saw it</strong>
+          <p>Coloured staff lines are the ones it locked onto. Where a note here disagrees
+            with the transcription, click that note in the score and nudge it with the
+            <em>Fix note</em> buttons.</p>
+        </div>
+        <button class="btn btn-ghost" data-close-modal>Close</button>
+      </header>
+      <div class="original-pages" id="originalPages"></div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────── Fingering chart view ─────────────────────── -->
+  <section class="view" id="view-chart">
+    <div class="panel paper chart-panel">
+      <div class="chart-head">
+        <div class="note-readout">
+          <div class="note-readout-main">
+            <span class="note-name" id="chartNoteName">—</span>
+          </div>
+          <div class="note-readout-meta"><span id="chartNoteConcert"></span></div>
+        </div>
+        <p class="chart-hint">Click any note, or use ← → to walk the chromatic scale.
+          Fingerings are written pitch and are the same on every saxophone.</p>
+      </div>
+
+      <div class="diagram-row" id="chartDiagramRow"></div>
+      <p class="fingering-desc" id="chartDesc"></p>
+
+      <div class="score-inner chart-staves" id="chartStaves">
+        <div id="chartRows"></div>
+        <div class="note-highlight" id="chartHighlight" hidden></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/vexflow.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
