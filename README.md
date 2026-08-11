@@ -19,7 +19,8 @@ every note, in order. Runs entirely on your own machine.
   nudge it by a semitone or an octave, or open the original page side by side.
 - **Practice page** of warm-ups, scales, arpeggios and patterns, each laid out
   with every fingering on screen at once.
-- **Chromatic chart tab** for looking up a single note, no file needed.
+- **Fingering chart** with the whole written range on one screen, alternates
+  included, no file needed.
 
 ## Run it
 
@@ -70,10 +71,14 @@ which key is which.
 
 ![The diagram with every key named](docs/key-names.png)
 
-The **Fingering chart** tab walks the chromatic scale from low Bb to altissimo
-F#, with the same diagram for each note.
+## Fingering chart
 
-![The chromatic fingering chart](docs/chart.png)
+The whole written range on one screen, low B♭ up to altissimo F♯. Notes with
+more than one fingering show both — bis B♭ next to side B♭, standard F♯ next to
+the alternate — so you can see the choice rather than read about it. Click a
+note to hear it, or walk the range with the arrow keys.
+
+![The fingering chart: every note of the written range at once](docs/chart.png)
 
 ## How it works
 

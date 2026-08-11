@@ -2,8 +2,8 @@
    Each drill is laid out as one fingering diagram per note, all on screen at
    once, so a whole scale can be read the way a printed chart reads. */
 
-import { renderDiagram } from './fingering.js';
 import { renderNoteRow } from './score.js';
+import { renderNoteCards } from './notegrid.js';
 
 const MAX_PER_STAFF = 16;
 
@@ -48,27 +48,12 @@ export function renderDrillStaff(container, drill) {
 
 /** Draw the diagram for every note in the drill. Returns the card elements so
     the caller can mark which one is sounding. */
-/* Cards are too small for key names, so the diagrams here are always plain. */
+/** Draw the diagram for every note in the drill. */
 export function renderDrillNotes(container, drill, deps) {
-  const { diagram, fingeringFor, noteLabel, onSelect } = deps;
-  container.innerHTML = '';
+  const { fingeringFor, noteLabel } = deps;
   const flats = drill.fifths < 0;
-
-  return drill.notes.map((midi, step) => {
-    const card = document.createElement('button');
-    card.className = 'drill-note';
-    card.type = 'button';
-
-    const name = document.createElement('span');
-    name.className = 'drill-note-name';
-    name.textContent = noteLabel(midi, flats);
-    card.appendChild(name);
-
-    const option = fingeringFor(midi).options[0];
-    card.appendChild(renderDiagram(diagram, option ? option.keys : []));
-
-    if (onSelect) card.addEventListener('click', () => onSelect(step));
-    container.appendChild(card);
-    return card;
-  });
+  return renderNoteCards(container, drill.notes.map((midi) => ({
+    label: noteLabel(midi, flats),
+    options: fingeringFor(midi).options,
+  })), { diagram: deps.diagram, onSelect: deps.onSelect });
 }

@@ -1,6 +1,7 @@
 import { renderDiagram, describeFingering } from './fingering.js';
-import { renderScore, renderNoteRow } from './score.js';
+import { renderScore } from './score.js';
 import { renderDrillList, renderDrillStaff, renderDrillNotes } from './practice.js';
+import { renderNoteCards } from './notegrid.js';
 import { SaxSynth } from './audio.js';
 
 const $ = (id) => document.getElementById(id);
@@ -27,7 +28,7 @@ const state = {
 
   chart: [],
   chartIndex: 0,
-  chartPositions: [],
+  chartCards: [],
 
   drills: [],
   drillId: null,
@@ -446,48 +447,34 @@ function uploadFile(file) {
 /* ───────────────────────────── chart view ────────────────────────────── */
 
 function drawChart() {
-  const rows = $('chartRows');
-  rows.innerHTML = '';
-  const midis = state.chart.map((entry) => entry.midi);
-  const split = midis.findIndex((m) => m >= 74);
-  const groups = [midis.slice(0, split), midis.slice(split)];
-
-  state.chartPositions = [];
-  let offset = 0;
-  for (const group of groups) {
-    const positions = renderNoteRow(rows, group, {
-      fifths: 0,
-      indexOffset: offset,
-      onSelectNote: (index) => setChartIndex(index, true),
-    });
-    state.chartPositions.push(...positions);
-    offset += group.length;
-  }
+  state.chartCards = renderNoteCards($('chartGrid'), state.chart.map((entry) => ({
+    label: noteLabel(entry.midi),
+    sublabel: hasEnharmonic(entry.midi) ? noteLabel(entry.midi, true) : '',
+    options: entry.options,
+  })), {
+    diagram: state.diagram,
+    showAlternates: true,
+    onSelect: (index) => setChartIndex(index, true),
+  });
   setChartIndex(state.chartIndex, false);
 }
 
 function setChartIndex(index, hear) {
   state.chartIndex = Math.max(0, Math.min(index, state.chart.length - 1));
-  const midi = state.chart[state.chartIndex].midi;
+  const entry = state.chart[state.chartIndex];
+  const { midi } = entry;
 
   $('chartNoteName').textContent = hasEnharmonic(midi)
     ? `${noteLabel(midi)} / ${noteLabel(midi, true)}` : noteLabel(midi);
-  $('chartNoteConcert').textContent = `written pitch • sounds ${noteLabel(concertMidi(midi))} concert on ${state.instruments[state.instrument].label}`;
+  $('chartNoteConcert').textContent = `sounds ${noteLabel(concertMidi(midi))} concert `
+    + `on ${state.instruments[state.instrument].label}`;
+  $('chartDesc').textContent = entry.options.length
+    ? describeFingering(state.diagram, entry.options[0].keys) : '';
 
-  const fingering = paintDiagrams($('chartDiagramRow'), midi);
-  $('chartDesc').textContent = fingering.options.length
-    ? describeFingering(state.diagram, fingering.options[0].keys) : '';
-
-  const box = state.chartPositions[state.chartIndex];
-  const highlight = $('chartHighlight');
-  if (box) {
-    highlight.hidden = false;
-    highlight.style.transform = `translate(${box.left}px, ${box.top}px)`;
-    highlight.style.width = `${box.width}px`;
-    highlight.style.height = `${box.height}px`;
-  } else {
-    highlight.hidden = true;
-  }
+  state.chartCards.forEach((card, i) => {
+    card.classList.toggle('is-current', i === state.chartIndex);
+  });
+  state.chartCards[state.chartIndex]?.scrollIntoView({ block: 'nearest' });
 
   if (hear) synth.note(concertMidi(midi), synth.now + 0.01, 0.7);
 }
@@ -636,7 +623,7 @@ function buildInstrumentToggle() {
       state.instrument = id;
       buildInstrumentToggle();
       if (state.score) updateReadout();
-      if (state.chartPositions.length) setChartIndex(state.chartIndex, false);
+      if (state.view === 'chart') setChartIndex(state.chartIndex, false);
       if (state.view === 'practice') drawDrill();
     });
     container.appendChild(button);
@@ -697,7 +684,6 @@ function wireEvents() {
   $('labelsToggle').addEventListener('change', (event) => {
     state.showLabels = event.target.checked;
     if (state.score) updateReadout();
-    if (state.chartPositions.length) setChartIndex(state.chartIndex, false);
   });
 
   $('drillPlay').addEventListener('click', () => (state.drillPlaying ? stopDrill() : startDrill()));

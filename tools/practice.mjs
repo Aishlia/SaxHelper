@@ -20,7 +20,7 @@ await page.click('.tab[data-view="practice"]');
 await page.waitForTimeout(600);
 
 const state = () => page.evaluate(() => {
-  const cards = [...document.querySelectorAll('#drillGrid .drill-note')];
+  const cards = [...document.querySelectorAll('#drillGrid .note-card')];
   const btn = document.getElementById('drillPlay');
   return {
     name: document.getElementById('drillName').textContent,

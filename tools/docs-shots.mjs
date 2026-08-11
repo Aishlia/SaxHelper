@@ -33,8 +33,8 @@ await page.screenshot({
 });
 await page.click('#labelsToggle');
 
-// The practice page and the chart are taller than the player, so both get a
-// window that fits the whole thing.
+// The practice page is taller than the player, so it gets a window that fits
+// the whole drill.
 await page.click('.tab[data-view="practice"]');
 await page.click('.drill-item[data-drill="major-g"]');
 await page.setViewportSize({ width: 1360, height: 1080 });
@@ -44,8 +44,9 @@ await page.screenshot({ path: `${OUT}/practice.png` });
 
 await page.click('.tab[data-view="chart"]');
 for (let i = 0; i < 9; i += 1) await page.keyboard.press('ArrowRight');
-await page.setViewportSize({ width: 1360, height: 1150 });
-await page.mouse.move(1340, 12);
+// Wide enough that the whole written range lands in three rows.
+await page.setViewportSize({ width: 1440, height: 940 });
+await page.mouse.move(1420, 12);
 await page.waitForTimeout(700);
 await page.screenshot({ path: `${OUT}/chart.png` });
 

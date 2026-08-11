@@ -185,7 +185,7 @@
 
         <p class="drill-hint" id="drillHint"></p>
         <div class="drill-staff" id="drillStaff"></div>
-        <div class="drill-grid" id="drillGrid"></div>
+        <div class="note-grid" id="drillGrid"></div>
       </section>
     </div>
   </section>
@@ -194,23 +194,20 @@
   <section class="view" id="view-chart">
     <div class="panel paper chart-panel">
       <div class="chart-head">
-        <div class="note-readout">
-          <div class="note-readout-main">
-            <span class="note-name" id="chartNoteName">—</span>
-          </div>
-          <div class="note-readout-meta"><span id="chartNoteConcert"></span></div>
+        <div>
+          <h2>Every note on the horn</h2>
+          <p class="chart-selected">
+            <strong id="chartNoteName">—</strong>
+            <span id="chartNoteConcert"></span>
+            <span id="chartDesc"></span>
+          </p>
         </div>
-        <p class="chart-hint">Click any note, or use ← → to walk the chromatic scale.
-          Fingerings are written pitch and are the same on every saxophone.</p>
+        <p class="chart-hint">Low B♭ up to altissimo F♯, in written pitch — the same
+          on every saxophone. Click a note to hear it, or use ← → to walk the scale.
+          Where a note has more than one fingering, both are shown.</p>
       </div>
 
-      <div class="diagram-row" id="chartDiagramRow"></div>
-      <p class="fingering-desc" id="chartDesc"></p>
-
-      <div class="score-inner chart-staves" id="chartStaves">
-        <div id="chartRows"></div>
-        <div class="note-highlight" id="chartHighlight" hidden></div>
-      </div>
+      <div class="note-grid" id="chartGrid"></div>
     </div>
   </section>
 </main>
