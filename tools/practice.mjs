@@ -54,6 +54,9 @@ for (const [drill, shot] of [
   ['major-bb', 'p2-bb-major'],
   ['chromatic-octave', 'p3-chromatic'],
   ['major-c-2oct', 'p4-two-octave'],
+  // The highest drill on the page: its staff needs room for three ledger lines.
+  ['two-five-one', 'p5-jazz-251'],
+  ['bebop-dominant', 'p6-bebop'],
 ]) {
   await page.click(`.drill-item[data-drill="${drill}"]`);
   await page.waitForTimeout(450);

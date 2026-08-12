@@ -20,6 +20,15 @@ _PENTATONIC = [0, 2, 4, 7, 9, 12]
 _BLUES = [0, 3, 5, 6, 7, 10, 12]
 _THIRDS = [0, 4, 2, 5, 4, 7, 5, 9, 7, 11, 9, 12]
 
+# Jazz vocabulary. The dominant bebop scale adds a passing note between the
+# flat seven and the octave; half-whole is the symmetric diminished scale.
+_BEBOP_DOMINANT = [0, 2, 4, 5, 7, 9, 10, 11, 12]
+_HALF_WHOLE = [0, 1, 3, 4, 6, 7, 9, 10, 12]
+# Four notes off each degree of the scale, and each chord tone circled from a
+# step above then a semitone below.
+_DIGITAL_1235 = [0, 2, 4, 7, 2, 4, 5, 9, 4, 5, 7, 11, 5, 7, 9, 12]
+_ENCLOSURES = [2, -1, 0, 5, 3, 4, 9, 6, 7, 14, 11, 12]
+
 # Written key, the tonic that puts the scale in a comfortable place, and the
 # key signature to spell it with. These are the keys band music actually asks
 # for: written G is concert Bb, written C is concert Eb, and so on.
@@ -134,6 +143,42 @@ def _patterns() -> list[dict]:
     ]
 
 
+def _jazz_runs() -> list[dict]:
+    """Lines rather than scales, all sitting on a C root so the shapes are easy
+    to move to another key later. Spelled with flats, the way they read."""
+    return [
+        _drill("bebop-dominant", "Bebop dominant scale",
+               _up_down(60, _BEBOP_DOMINANT),
+               "A dominant scale with an extra note squeezed in between the flat "
+               "seven and the octave. That is what lands the chord tones back on "
+               "the strong beats. Play it over C7.", -1, 60, "dominant"),
+        _drill("digital-1235", "1-2-3-5 pattern",
+               [60 + step for step in _DIGITAL_1235],
+               "Four notes off each degree of the scale, and the building block "
+               "of a thousand bebop lines. Keep it dead even and let the last "
+               "note of each group pull into the next.", 0, 60, "major"),
+        _drill("enclosures", "Chromatic enclosures",
+               [60 + step for step in _ENCLOSURES],
+               "Circle each chord tone: a step above, a semitone below, then the "
+               "note itself. Slowly it sounds like hesitating; up to tempo it "
+               "sounds like bebop.", -1, 60, "major"),
+        _drill("half-whole", "Half-whole diminished",
+               _up_down(60, _HALF_WHOLE),
+               "Semitone, tone, semitone, tone all the way up. The sound of a "
+               "dominant chord that wants to be tense — try it over C7.",
+               -1, 60, "diminished"),
+        _drill("two-five-one", "ii–V–I run",
+               [65, 69, 72, 76, 71, 74, 77, 81, 76, 79, 83, 86],
+               "Over Dm7, G7, then Cmaj7. Each arpeggio starts on the chord's "
+               "third and runs up to its ninth, so the line keeps climbing while "
+               "the harmony moves underneath it.", -1),
+        _drill("blues-wail", "Blues wail",
+               [67, 70, 72, 70, 67, 65, 63, 60],
+               "A phrase, not a scale. Lean on the top note before letting it "
+               "fall, and bend into the flat third on the way down.", -1, 60, "blues"),
+    ]
+
+
 def catalog() -> list[dict]:
     return [
         {"name": "Warm up", "drills": _warm_up()},
@@ -141,6 +186,7 @@ def catalog() -> list[dict]:
         {"name": "Arpeggios", "drills": _arpeggios()},
         {"name": "Minor scales", "drills": _minor_scales()},
         {"name": "Patterns", "drills": _patterns()},
+        {"name": "Jazz runs", "drills": _jazz_runs()},
     ]
 
 

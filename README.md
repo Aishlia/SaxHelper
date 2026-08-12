@@ -52,11 +52,12 @@ fingering chart, `←` `→` walk the chromatic scale.
 
 ## Practice
 
-Two dozen drills, from long tones and octave slurs up through the seven scale
-keys band music actually asks for, arpeggios, natural minors and patterns. Pick
-one and the whole thing is on screen: the notation, then a fingering for every
-note in order. Play it back at any tempo and the highlight follows along, or
-click a single diagram to hear that note.
+Thirty drills: long tones and octave slurs, the seven scale keys band music
+actually asks for, arpeggios, natural minors, patterns, and a set of jazz runs —
+the bebop dominant scale, 1-2-3-5 patterns, chromatic enclosures, half-whole
+diminished and a ii–V–I. Pick one and the whole thing is on screen: the notation,
+then a fingering for every note in order. Play it back at any tempo and the
+highlight follows along, or click a single diagram to hear that note.
 
 ![The practice page, showing G major](docs/practice.png)
 
